@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from auth.authValidarToken import verify_auth_token
-from preprosesamiento.funcionesValidacion import validacion
-
+from accionesPDF.funcionesValidacion import PDFValidator
+from accionesPDF.summarization import SummarizePDF
 
 
 app = FastAPI()
@@ -19,6 +19,13 @@ def authentication(authorized: bool = Depends(verify_auth_token)):
 def validarPDF(pdfBase64, token):
 
     if verify_auth_token(token) == True:
-        #path, state = 
-        #print(path, state)
-        return validacion(pdfBase64)
+        vl = PDFValidator()
+        return vl.validate_pdf(pdfBase64)
+
+
+@app.post("/summarizePDF")
+def summarizePDF(pdfBase64, token):
+
+    if verify_auth_token(token) == True:
+        su = SummarizePDF(max_summary_length=500, min_summary_length=250)
+        return su.translate_and_summarize(pdfBase64)
